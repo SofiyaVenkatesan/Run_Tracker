@@ -15,9 +15,9 @@ class CreateDates extends AbstractMigration
             'limit' => 11,
             'null' => false,
         ]);
-        $table->addColumn('month', 'string', [
+        $table->addColumn('month', 'integer', [
             'default' => null,
-            'limit' => 255,
+            'limit' => 11,
             'null' => false,
         ]);
         $table->addColumn('year', 'integer', [
