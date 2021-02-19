@@ -8,6 +8,8 @@
         <li><?= $this->Html->link(__('List Users'), ['controller' => 'Users', 'action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New User'), ['controller' => 'Users', 'action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('Statistics'), ['action' => 'stats']) ?></li>
+        <li><?= $this->Html->link(__('Ranking'), ['action' => 'rank']) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['controller' => 'Users', 'action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="runLogs index large-9 medium-8 columns content">
@@ -16,10 +18,10 @@
         <thead>
             <tr>
                 <th scope="col"><?= $this->Paginator->sort('id') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('users_id') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('user_id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('distance') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('minutes') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('dates_id') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('date') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('modified') ?></th>
                 <th scope="col" class="actions"><?= __('Actions') ?></th>
@@ -32,7 +34,7 @@
                 <td><?= $runLog->has('user') ? $this->Html->link($runLog->user->name, ['controller' => 'Users', 'action' => 'view', $runLog->user->id]) : '' ?></td>
                 <td><?= $this->Number->format($runLog->distance) ?></td>
                 <td><?= $this->Number->format($runLog->minutes) ?></td>
-                <td><?= $runLog->has('date') ? $this->Html->link($runLog->date->id, ['controller' => 'Dates', 'action' => 'view', $runLog->date->id]) : '' ?></td>
+                <td><?= $runLog->has('date') ? $this->Html->link($runLog->date->date, ['controller' => 'Dates', 'action' => 'view', $runLog->date->id]) : '' ?></td>
                 <td><?= h($runLog->created) ?></td>
                 <td><?= h($runLog->modified) ?></td>
                 <td class="actions">

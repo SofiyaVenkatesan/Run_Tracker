@@ -9,6 +9,7 @@
         <li><?= $this->Html->link(__('List Run Logs'), ['action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('Add New Run Log'), ['action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('Ranking'), ['action' => 'rank']) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['controller' => 'Users', 'action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="users form large-9 medium-8 columns content">
@@ -17,15 +18,14 @@
     'url' => [
         'action' => 'stats'
     ]
-    ]);?>
-        <fieldset>
-            <legend><?= __('Filter the Statistics') ?></legend>
-            <?= $this->Form->control('year') ?>
-            <?= $this->Form->control('month') ?>
-            <?= $this->Form->control('week') ?>
-        </fieldset>
+    ]); ?>
+    <fieldset>
+        <legend><?= __('Filter the Statistics') ?></legend>
+        <?= $this->Form->control('year', ['required' => true]) ?>
+        <?= $this->Form->control('month') ?>
+        <?= $this->Form->control('week') ?>
+    </fieldset>
     <?= $this->Form->button(__('Check')) ?>
     <?= $this->Form->end() ?>
-
 </div>
 

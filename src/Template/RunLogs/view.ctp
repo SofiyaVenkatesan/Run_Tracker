@@ -7,14 +7,15 @@
 <nav class="large-3 medium-4 columns" id="actions-sidebar">
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Html->link(__('Edit Run Log'), ['action' => 'edit', $runLog->id]) ?> </li>
-        <li><?= $this->Form->postLink(__('Delete Run Log'), ['action' => 'delete', $runLog->id], ['confirm' => __('Are you sure you want to delete # {0}?', $runLog->id)]) ?> </li>
-        <li><?= $this->Html->link(__('List Run Logs'), ['action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New Run Log'), ['action' => 'add']) ?> </li>
-        <li><?= $this->Html->link(__('List Users'), ['controller' => 'Users', 'action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New User'), ['controller' => 'Users', 'action' => 'add']) ?> </li>
-        <li><?= $this->Html->link(__('List Dates'), ['controller' => 'Dates', 'action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New Date'), ['controller' => 'Dates', 'action' => 'add']) ?> </li>
+        <li><?= $this->Html->link(__('Edit Run Log'), ['action' => 'edit', $runLog->id]) ?></li>
+        <li><?= $this->Form->postLink(__('Delete Run Log'), ['action' => 'delete', $runLog->id], ['confirm' => __('Are you sure you want to delete # {0}?', $runLog->id)]) ?></li>
+        <li><?= $this->Html->link(__('List Run Logs'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New Run Log'), ['action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('List Users'), ['controller' => 'Users', 'action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New User'), ['controller' => 'Users', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('Statistics'), ['action' => 'stats']) ?></li>
+        <li><?= $this->Html->link(__('Ranking'), ['action' => 'rank']) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['controller' => 'Users', 'action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="runLogs view large-9 medium-8 columns content">
@@ -26,7 +27,7 @@
         </tr>
         <tr>
             <th scope="row"><?= __('Date') ?></th>
-            <td><?= $runLog->has('date') ? $this->Html->link($runLog->date->id, ['controller' => 'Dates', 'action' => 'view', $runLog->date->id]) : '' ?></td>
+            <td><?= $runLog->has('date') ? $this->Html->link($runLog->date->date, ['controller' => 'Dates', 'action' => 'view', $runLog->date->id]) : '' ?></td>
         </tr>
         <tr>
             <th scope="row"><?= __('Id') ?></th>

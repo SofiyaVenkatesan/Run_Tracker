@@ -7,28 +7,52 @@ use Cake\ORM\Query;
 use Cake\ORM\ResultSet;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\I18n\Time;
+
+/**
+ * RunLogs Controller
+ *
+ * @property \App\Model\Table\RunLogsTable $RunLogs
+ *
+ * @method \App\Model\Entity\RunLog[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
+ */
+
 class RunLogsController extends AppController
 {
     
+    /**
+     * Index method
+     *
+     * @return \Cake\Http\Response|null
+     */
     public function index()
     {
         $this->paginate = [
             'contain' => ['Users', 'Dates'],
         ];
         $runLogs = $this->paginate($this->RunLogs);
-
         $this->set(compact('runLogs'));
     }
 
+    /**
+     * View method
+     *
+     * @param string|null $id RunLog id.
+     * @return \Cake\Http\Response|null
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
     public function view($id = null)
     {
         $runLog = $this->RunLogs->get($id, [
             'contain' => ['Users', 'Dates'],
         ]);
-
         $this->set('runLog', $runLog);
     }
 
+    /**
+     * Add method
+     *
+     * @return \Cake\Http\Response|null Redirects on successful add, renders view otherwise.
+     */
     public function add()
     {
         if ($this->request->is('post')) {
@@ -37,10 +61,7 @@ class RunLogsController extends AppController
             $dateValue = $this->request->getData('date');
           
             $dateObject = \Cake\Database\Type::build('date')->marshal($this->request->getData('date'));
-
             $date->date = $dateObject;
-            
-
             $date->week = ceil(($dateValue['day'] - $dateObject->format("N") - 1) / 7) + 1;
          
             $date->month = $dateValue['month'];
@@ -48,38 +69,36 @@ class RunLogsController extends AppController
             $date->created = date("Y-m-d H:i:s");
             $date->modified = date("Y-m-d H:i:s");
                 
-            $datelist=$datetable->save($date);
+            $datelist = $datetable->save($date);
 
             $runtable = TableRegistry::getTableLocator()->get('RunLogs');
             $usertable = TableRegistry::getTableLocator()->get('Users');
-
-
             $run = $runtable->newEntity();
 
-            $userId = $usertable
-                ->find()
-                ->select(['id'])
-                ->where(['username =' => $this->request->getData('username')]);
-          
-            $run->users_id = $userId;
+            $run->users_id = $this->Auth->user('id');
+
             $run->distance = $this->request->getData('distance');
             $run->minutes = $this->request->getData('minutes');
             $run->dates_id = $datelist['id'];
-            //echo $datelist['id'];
+            
             $run->created = date("Y-m-d H:i:s");
             $run->modified = date("Y-m-d H:i:s");
-            //print_r($runlog);
             
             if ($runtable->save($run)) {
                 $this->Flash->success(__('The run log has been saved.'));
-
                 return $this->redirect(['action' => 'index']);
             }
             $this->Flash->error(__('The run log could not be saved. Please, try again.'));
-
         }
     }
 
+    /**
+     * Edit method
+     *
+     * @param string|null $id RunLog id.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
     public function edit($id = null)
     {
         $runLog = $this->RunLogs->get($id, [
@@ -87,6 +106,7 @@ class RunLogsController extends AppController
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $runLog = $this->RunLogs->patchEntity($runLog, $this->request->getData());
+            $runLog->modified = date("Y-m-d H:i:s");
             if ($this->RunLogs->save($runLog)) {
                 $this->Flash->success(__('The run log has been saved.'));
 
@@ -99,6 +119,13 @@ class RunLogsController extends AppController
         $this->set(compact('runLog', 'users', 'dates'));
     }
 
+    /**
+     * Delete method
+     *
+     * @param string|null $id RunLog id.
+     * @return \Cake\Http\Response|null Redirects to index.
+     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
+     */
     public function delete($id = null)
     {
         $this->request->allowMethod(['post', 'delete']);
@@ -108,187 +135,117 @@ class RunLogsController extends AppController
         } else {
             $this->Flash->error(__('The run log could not be deleted. Please, try again.'));
         }
-
         return $this->redirect(['action' => 'index']);
     }
 
-    public function stats(){
-        if ($this->request->is('post')) {
-            if (empty($this->request->getData('year'))){
-                $this->Flash->error(__('Year is mandatory'));
-            }
-            else{
-                $year = $this->request->getData('year');
-                if (empty($this->request->getData('month'))){
-                    if (!empty($this->request->getData('week'))){
-                        $this->Flash->error(__('Month is mandatory for week statistics'));
-                    }
-                    else{
-                        $week = 0;
-                        $month = 0;
-                    }
+    /**
+     * Method for validating info for stats
+     *
+     * @return Redirect URL to statistics/ranking view page 
+     * @throws Error on invalid info for getting stats
+     */
+    public function stats()
+    {
+        if ($this->request->is(['post'])) {
+            $action = 'statsview';
+            $dateValidations = ['week', 'month'];
+            $isValid = false;
+            $date = ['month' => 0, 'week' => 0, 'userId' => $this->Auth->user('id')];
+            $date['year'] = $this->request->getData('year');
+            
+            foreach ($dateValidations as $dateValidation) {
+                if (!empty($this->request->getData($dateValidation))) {
+                    $date[$dateValidation] = $this->request->getData($dateValidation);
+                    $isValid = true;
+                    continue;
                 }
-                else{
-                    $month = $this->request->getData('month');
-                    if (empty($this->request->getData('week'))){
-                        $week = 0;
-                    }
-                    else{
-                        $week = $this->request->getData('week');
-                    }   
+                if ($isValid) {
+                    $this->Flash->error(__('Month is mandatory for week statistics'));
+                    return $this->redirect($this->referer());
                 }
-                $this->set(compact($year, $month, $week));
-                return $this->redirect(['controller' => 'RunLogs', 'action' => 'statsview', $year, $month, $week]);
-                    
             }
+            if ($this->request->getData('rankOrder') != null) {
+                $date['rankOrder'] = $this->request->getData('rankOrder');
+                $action = 'rankview';
+            }
+            $dateObject = serialize($date);
+            return $this->redirect(['controller' => 'RunLogs', 'action' => $action, $dateObject]); 
         }
+    }
+    
+    /**
+     * Statistics view method
+     *
+     * @param string|null $dateObject Date info.
+     * @return \Cake\Http\Response|null
+     */
+    public function statsview($dateObject = null)
+    {
+        $date = array();
+        $date = unserialize($dateObject);
+        $runLogs = TableRegistry::getTableLocator()->get('RunLogs');
+        $users = TableRegistry::getTableLocator()->get('Users');
+
+        $query = $this->RunLogs->statsview($dateObject, $runLogs);
+
+        $query->having(['user.id' => $date['userId']]);
+        $this->set(compact('query'));
     }
 
-    public function statsview($year, $month, $week){
-        $run_logs = TableRegistry::getTableLocator()->get('RunLogs');
-        //debug($this->request->param('year'));
-        if ($month == 0)
-        {
-            $query = $run_logs->find();
-            $query->select(['username' =>'u.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
-            ->join([
-                'u' => ['table' => 'users', 
-                        'type' => 'INNER', 
-                        'conditions' => 'u.id = RunLogs.users_id',
-                ],
-                'd' => ['table' => 'dates', 
-                        'type' => 'INNER', 
-                        'conditions' => ['d.id = RunLogs.dates_id', 'd.year =' => $year]]], ['d.year' => 'integer'])
-            ->group('u.id');
-            $this->set(compact('query', 'year'));  
-        }
-        else if ($week == 0)
-        {
-            $query = $run_logs->find();
-            $query->select(['username' =>'u.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
-                ->join([
-                    'u' => ['table' => 'users', 
-                            'type' => 'INNER', 
-                            'conditions' => 'u.id = RunLogs.users_id',
-                    ],
-                    'd' => ['table' => 'dates', 
-                            'type' => 'INNER', 
-                            'conditions' => ['d.id = RunLogs.dates_id', 'd.year =' => $year, 'd.month IS' => $month]]], ['d.year' => 'integer', 'd.month' => 'integer'])
-                ->group('u.id');
-            $this->set(compact('query', 'year', 'month'));
-            
-        }
-        else{
-            $query = $run_logs->find();
-            $query->select(['username' =>'u.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
-                ->join([
-                    'u' => ['table' => 'users', 
-                            'type' => 'INNER', 
-                            'conditions' => 'u.id = RunLogs.users_id',
-                    ],
-                    'd' => ['table' => 'dates', 
-                            'type' => 'INNER', 
-                            'conditions' => ['d.id = RunLogs.dates_id', 'd.year =' => $year, 'd.month IS' => $month, 'd.week IS' => $week]]], ['d.year' => 'integer', 'd.month' => 'integer', 'd.week' => 'integer'])
-                ->group('u.id');
-                $this->set(compact('query', 'year', 'month', 'week'));
-        } 
+    /**
+     * Rank method 
+     *
+     * @return Renders view.
+     */
+    public function rank()
+    {
+
     }
 
-    public function rank(){
-        if ($this->request->is('post')) {
-            $rankorder = $this->request->getData('rankorder');
-            
-            if (empty($this->request->getData('year'))){
-                $this->Flash->error(__('Year is mandatory'));
-            }
-            else{
-                $year = $this->request->getData('year');
-                if (empty($this->request->getData('month'))){
-                    if (!empty($this->request->getData('week'))){
-                        $this->Flash->error(__('Month is mandatory for week statistics'));
-                    }
-                    else{
-                        $week = 0;
-                        $month = 0;
-                    }
-                }
-                else{
-                    $month = $this->request->getData('month');
-                    if (empty($this->request->getData('week'))){
-                        $week = 0;
-                    }
-                    else{
-                        $week = $this->request->getData('week');
-                    }   
-                }
-                $this->set(compact($year, $month, $week, $rankorder));
-                return $this->redirect(['controller' => 'RunLogs', 'action' => 'rankview',$year, $month, $week, $rankorder]);
-                    
-            }
+    /**
+     * Ranking view method
+     *
+     * @param string|null $dateObject Date info.
+     * @return \Cake\Http\Response|null
+     */
+    public function rankview($dateObject = null)
+    {
+        $date = array();
+        $date = unserialize($dateObject);
+        if ($date['rankOrder'] == 0) {
+            $date['rankOrder'] = "count";
+        } else if ($date['rankOrder'] == 1) {
+            $date['rankOrder'] = "distanceSum";
+        } else {
+            $date['rankOrder'] = "minuteSum";
         }
+        $runLogs = TableRegistry::getTableLocator()->get('RunLogs');
+
+        $query = $this->RunLogs->statsview($dateObject, $runLogs);
+        $query->order([$date['rankOrder'] => 'DESC']);
+        $this->set(compact('query'));  
     }
-    public function rankview($year, $month, $week, $rankorder){
-        //return $this -> render('/RunLogs/rankview');
-        //debug($rankorder);
-        if ($rankorder == 0){
-            $rankorder = "count";
+
+    /**
+     * Method for Authorizing
+     *
+     * @param $user Active user instance
+     *
+     * @return boolean indicating whether or not the user is authorized.
+     */
+    public function isAuthorized($user)
+    {
+        $action = $this->request->getParam('action');
+        if (in_array($action, ['add', 'view', 'index', 'rank', 'rankview'])) {
+            return true;
         }
-        else if($rankorder == 1){
-            $rankorder = "distanceSum";
+        $id = $this->request->getParam('pass.0');
+        if (!$id) {
+            return false;
         }
-        else{
-            $rankorder = "minuteSum";
-        }
-        $run_logs = TableRegistry::getTableLocator()->get('RunLogs');
-        
-        if ($month == 0){
-            $query = $run_logs->find();
-            $query->select(['username' =>'u.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
-            ->join([
-                'u' => ['table' => 'users', 
-                        'type' => 'INNER', 
-                        'conditions' => 'u.id = RunLogs.users_id',
-                ],
-                'd' => ['table' => 'dates', 
-                        'type' => 'INNER', 
-                        'conditions' => ['d.id = RunLogs.dates_id', 'd.year =' => $year]]], ['d.year' => 'integer'])
-            ->group('u.id')
-            ->order([$rankorder => 'DESC']);
-            //debug($rankorder);
-            $this->set(compact('query', 'year'));  
-        }
-        else if ($week == 0){
-            $query = $run_logs->find();
-            $query->select(['username' =>'u.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
-                ->join([
-                    'u' => ['table' => 'users', 
-                            'type' => 'INNER', 
-                            'conditions' => 'u.id = RunLogs.users_id',
-                    ],
-                    'd' => ['table' => 'dates', 
-                            'type' => 'INNER', 
-                            'conditions' => ['d.id = RunLogs.dates_id', 'd.year =' => $year, 'd.month IS' => $month]]], ['d.year' => 'integer', 'd.month' => 'integer'])
-                ->group('u.id')
-                ->order([$rankorder => 'DESC']);
-                //debug($rankorder);
-            $this->set(compact('query', 'year', 'month'));
-            
-        }
-        else{
-            $query = $run_logs->find();
-            $query->select(['username' =>'u.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
-                ->join([
-                    'u' => ['table' => 'users', 
-                            'type' => 'INNER', 
-                            'conditions' => 'u.id = RunLogs.users_id',
-                    ],
-                    'd' => ['table' => 'dates', 
-                            'type' => 'INNER', 
-                            'conditions' => ['d.id = RunLogs.dates_id', 'd.year =' => $year, 'd.month IS' => $month, 'd.week IS' => $week]]], ['d.year' => 'integer', 'd.month' => 'integer', 'd.week' => 'integer'])
-                ->group('u.id')
-                ->order([$rankorder => 'DESC']);
-                //debug($rankorder);
-                $this->set(compact('query', 'year', 'month', 'week'));
-        } 
+        $RunLogs = TableRegistry::getTableLocator()->get('RunLogs');
+        $runLog = $RunLogs->findById($id)->first();
+
+        return $runLog->users_id === $user['id'];
     }
 }

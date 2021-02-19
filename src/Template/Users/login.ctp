@@ -1,7 +1,12 @@
 <?php
 
 ?>
-
+<nav class="large-3 medium-4 columns" id="actions-sidebar">
+    <ul class="side-nav">
+        <li class="heading"><?= __('New User?') ?></li>
+        <li><?= $this->Html->link(__('Register'), ['action' => 'add']) ?></li>
+    </ul>
+</nav>
 <div class="users form">
 	<?= $this->Flash->render() ?>
 	<?= $this->Form->create() ?>

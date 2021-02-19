@@ -9,7 +9,7 @@ use Cake\ORM\Entity;
  * @property int $id
  * @property \Cake\I18n\FrozenDate $date
  * @property int $week
- * @property string $month
+ * @property int $month
  * @property int $year
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified

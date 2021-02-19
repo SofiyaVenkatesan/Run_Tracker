@@ -25,6 +25,12 @@ class UsersTable extends Table
         $this->addBehavior('Timestamp');
     }
 
+    /**
+     * Default validation rules.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance.
+     * @return \Cake\Validation\Validator
+     */
     public function validationDefault(Validator $validator)
     {
         $validator
@@ -58,6 +64,12 @@ class UsersTable extends Table
         return $validator;
     }
 
+    /**
+     * Buildrules method
+     *
+     * @param object $rules is RulesChecker class object
+     * @return \Cake\ORM\RulesChecker object
+     */
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->isUnique(['username']));

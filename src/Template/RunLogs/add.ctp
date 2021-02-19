@@ -9,21 +9,19 @@
         <li><?= $this->Html->link(__('Add New Run Log'), ['action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('Statistics'), ['action' => 'stats']) ?></li>
         <li><?= $this->Html->link(__('Ranking'), ['action' => 'rank']) ?></li>
-        
+        <li><?= $this->Html->link(__('Logout'), ['controller' => 'Users', 'action' => 'logout']) ?></li>
     </ul>
 </nav>
+
 <div class="runLogs form large-9 medium-8 columns content">
     <?= $this->Form->create() ?>
     <fieldset>
         <legend><?= __('Add Run Log') ?></legend>
         <?php
-            echo $this->Form->control('username');
-            echo $this->Form->control('distance');
-            echo $this->Form->control('minutes');
+            echo $this->Form->control('distance', ['required' => true]);
+            echo $this->Form->control('minutes', ['required' => true]);
             echo 'Date(Year/ Month/ Day)';
-            echo $this->Form->date('date', ['minYear' => 2010, 'maxYear' => date('Y'), 'monthNames' => false]);
-
-            ///echo $this->Form->control('dates_id', ['options' => $dates]);
+            echo $this->Form->date('date', ['minYear' => 2010, 'maxYear' => date('Y'), 'monthNames' => false, ['required' => true]]);
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

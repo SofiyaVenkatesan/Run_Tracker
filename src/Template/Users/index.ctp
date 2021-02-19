@@ -5,10 +5,11 @@
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
         <li><?= $this->Html->link(__('New User'), ['action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('New Run Log'), ['controller' => 'RunLogs', 'action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('List Run Logs'), ['controller' => 'RunLogs', 'action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('Add New Run Log'), ['controller' => 'RunLogs', 'action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('Statistics'), ['controller' => 'RunLogs', 'action' => 'stats']) ?></li>
         <li><?= $this->Html->link(__('Ranking'), ['controller' => 'RunLogs', 'action' => 'rank']) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="users index large-9 medium-8 columns content">
@@ -18,8 +19,6 @@
             <tr>
                 <th scope="col"><?= $this->Paginator->sort('id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('name') ?></th>
-               <!-- <th scope="col"><?= $this->Paginator->sort('username') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('password') ?></th>-->
                 <th scope="col"><?= $this->Paginator->sort('mobile') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('modified') ?></th>
@@ -31,9 +30,7 @@
             <tr>
                 <td><?= $this->Number->format($user->id) ?></td>
                 <td><?= h($user->name) ?></td>
-               <!-- <td><?= h($user->username) ?></td>
-                <td><?= h($user->password) ?></td>-->
-                <td><?= $this->Number->format($user->mobile) ?></td>
+                <td><?= h($user->mobile) ?></td>
                 <td><?= h($user->created) ?></td>
                 <td><?= h($user->modified) ?></td>
                 <td class="actions">

@@ -8,6 +8,12 @@ use Cake\Validation\Validator;
 
 class RunLogsTable extends Table
 {
+    /**
+     * Initialize method
+     *
+     * @param array $config The configuration for the Table.
+     * @return void
+     */
     public function initialize(array $config)
     {
         parent::initialize($config);
@@ -26,10 +32,15 @@ class RunLogsTable extends Table
             'foreignKey' => 'dates_id',
             'joinType' => 'INNER',
         ]);
-
         
     }
 
+    /**
+     * Default validation rules.
+     *
+     * @param \Cake\Validation\Validator $validator Validator instance.
+     * @return \Cake\Validation\Validator
+     */
     public function validationDefault(Validator $validator)
     {
         $validator
@@ -54,11 +65,49 @@ class RunLogsTable extends Table
         return $validator;
     }
 
+    /**
+     * Buildrules method
+     *
+     * @param object $rules is RulesChecker class object
+     * @return \Cake\ORM\RulesChecker object
+     */
     public function buildRules(RulesChecker $rules)
     {
         $rules->add($rules->existsIn(['users_id'], 'Users'));
         $rules->add($rules->existsIn(['dates_id'], 'Dates'));
 
         return $rules;
+    }
+
+    /**
+     * Query Building method for Statistics/Ranking 
+     *
+     * @param string|null $dateObject Date info, object $runLogs is the table object containing set of runLogs
+     * @return Query Object $query
+     */
+    public function statsview($dateObject, $runLogs)
+    {
+        $date = array();
+        $date = unserialize($dateObject);
+        $query = $runLogs->find();
+        $query->select(['username' =>'user.username', 'count' => $query->func()->count('*'), 'distanceSum' => $query->func()-> sum('distance'), 'minuteSum' => $query->func()-> sum('minutes')])
+                ->join([
+                    'user' => ['table' => 'users', 
+                            'type' => 'INNER', 
+                            'conditions' => 'user.id = RunLogs.users_id'
+                    ],
+                    'date' => ['table' => 'dates', 
+                            'type' => 'INNER', 
+                            'conditions' => 'date.id = RunLogs.dates_id']])
+                ->where(['date.year' => $date['year']])
+                ->group('user.id');
+        if ($date['month'] != 0){
+            $query->where(['date.month' => $date['month']]); 
+        }
+        if ($date['week'] != 0){
+            $query->where(['date.week' => $date['week']]); 
+        }
+        
+        return $query;
     }
 }

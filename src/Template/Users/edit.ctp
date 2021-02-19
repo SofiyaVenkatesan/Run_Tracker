@@ -13,7 +13,13 @@
                 ['confirm' => __('Are you sure you want to delete # {0}?', $user->id)]
             )
         ?></li>
-        <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?></li>       
+        <li><?= $this->Html->link(__('New User'), ['action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('List Run Log'), ['controller' => 'RunLogs', 'action' => 'index']) ?></li>
+        <li><?= $this->Html->link(__('New Run Log'), ['controller' => 'RunLogs', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('Statistics'), ['controller' => 'RunLogs', 'action' => 'stats']) ?></li>
+        <li><?= $this->Html->link(__('Ranking'), ['controller' => 'RunLogs', 'action' => 'rank']) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="users form large-9 medium-8 columns content">
