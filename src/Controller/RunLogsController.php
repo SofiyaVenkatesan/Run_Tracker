@@ -236,7 +236,7 @@ class RunLogsController extends AppController
     public function isAuthorized($user)
     {
         $action = $this->request->getParam('action');
-        if (in_array($action, ['add', 'view', 'index', 'rank', 'rankview'])) {
+        if (in_array($action, ['add', 'view', 'index', 'stats', 'statsview', 'rank', 'rankview'])) {
             return true;
         }
         $id = $this->request->getParam('pass.0');
